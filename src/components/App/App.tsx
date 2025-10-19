@@ -2,6 +2,9 @@ import { useState } from 'react'
 import SearchBox from '../SearchBox/SearchBox'
 import Pagination from '../Pagination/Pagination'
 import Modal from '../Modal/Modal'
+import Loader from '../Loader/Loader'
+import Error from '../Error/Error'
+import NoteList from '../NoteList/NoteList'
 import type { Note } from "../../types/note";
 
 import css from "./App.module.css";
