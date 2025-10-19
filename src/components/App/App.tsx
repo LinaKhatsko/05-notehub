@@ -5,10 +5,9 @@ import Modal from '../Modal/Modal'
 import Loader from '../Loader/Loader'
 import Error from '../Error/Error'
 import NoteList from '../NoteList/NoteList'
+import NoteForm from '../NoteForm/NoteForm'
 import type { Note } from "../../types/note";
-
 import css from "./App.module.css";
-import NoteList from '../NoteList/NoteList';
 
 function App() {
   // const queryData = useQuery({
