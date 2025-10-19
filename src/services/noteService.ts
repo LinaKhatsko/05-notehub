@@ -1,11 +1,27 @@
 import axios from "axios";
 import type { Note, NoteTag } from "../types/note";
 
-export interface NoteResponse {
-    results: Note[];
-    total_pages: number;
-    page: number;
-    total_results: number;
+const apiClient = axios.create({
+    baseURL: "https://notehub-public.goit.study/api",
+});
+
+apiClient.interceptors.request.use((config) => {
+    const token = import.meta.env.VITE_NOTEHUB_TOKEN;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// Тип відповіді для списку нотаток, яке реально повертає API
+export interface FetchNotesResponse {
+    notes: Note[];
+    totalPages: number;
+}
+
+interface FetchNotesParams {
+    page?: number;
+    query?: string;
 }
 
 export interface NewNotePayload {
@@ -14,23 +30,18 @@ export interface NewNotePayload {
     tag: NoteTag;
 }
 
-// Створюємо екземпляр axios з базовими налаштуваннями
-const apiClient = axios.create({
-    baseURL: "https://notehub-public.goit.study/api/",
-    headers: {
-        Authorization: `Bearer ${import.meta.env.VITE_NOTEHUB_TOKEN}`,
-    },
-});
-
-export const fetchNotes = async (
-    query: string,
-    page: number
-): Promise<NoteResponse> => {
-    // передаємо дженерик прямо у get<NoteResponse>() для типобезпеки.
-    const response = await apiClient.get<NoteResponse>("/notes", {
-        params: { query, page },
+// Отримання списку нотаток з урахуванням пагінації та пошуку
+export const fetchNotes = async ({
+    page = 1,
+    query = "",
+}: FetchNotesParams): Promise<FetchNotesResponse> => {
+    const response = await apiClient.get<FetchNotesResponse>("/notes", {
+        params: {
+            page,
+            perPage: 12,
+            ...(query ? { search: query } : {}),
+        },
     });
-    // Повертаємо дані API як є, без перетворень.
     return response.data;
 };
 
@@ -40,7 +51,10 @@ export const createNote = async (noteData: NewNotePayload): Promise<Note> => {
     return response.data;
 };
 
-// Видалення нотатки за ID.
+/**
+ * Видалення нотатки за ID.
+ * ПОВЕРТАЄМО видалену нотатку (як це робить API), а не void.
+ */
 export const deleteNote = async (noteId: string): Promise<Note> => {
     if (!noteId) {
         throw new Error("Note ID is required for deletion");
@@ -48,4 +62,3 @@ export const deleteNote = async (noteId: string): Promise<Note> => {
     const response = await apiClient.delete<Note>(`/notes/${noteId}`);
     return response.data;
 };
-
